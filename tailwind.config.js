@@ -14,6 +14,7 @@ module.exports = {
       },
       colors: {
         "special-dark-blue": "#0e1120",
+        "header-button": "#3898ff",
       },
     },
   },

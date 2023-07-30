@@ -1,9 +1,9 @@
-import Image from "next/image";
-
 export default function Home() {
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24 text-5xl">
-      MAIN PAGE
+    <main className=" h-full w-full">
+      <h1 className=" text-8xl p-4 text-center font-bold from-yellow-400 to-blue-400 bg-gradient-to-b bg-clip-text text-transparent">
+        Main page
+      </h1>
     </main>
   );
 }

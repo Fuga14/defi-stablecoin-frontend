@@ -7,6 +7,7 @@ import {
   getDefaultWallets,
   connectorsForWallets,
   darkTheme,
+  midnightTheme,
 } from "@rainbow-me/rainbowkit";
 import {
   argentWallet,
@@ -83,7 +84,7 @@ const Providers = ({ children }) => {
       <RainbowKitProvider
         chains={chains}
         appInfo={demoAppInfo}
-        theme={darkTheme()}
+        theme={midnightTheme()}
       >
         {mounted && children}
       </RainbowKitProvider>
