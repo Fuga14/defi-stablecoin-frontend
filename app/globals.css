@@ -7,3 +7,9 @@
     @apply bg-special-dark-blue text-white font-sans;
   }
 }
+
+@layer components {
+  .gradient-b-y {
+    @apply from-yellow-400 to-blue-400 bg-gradient-to-b bg-clip-text text-transparent;
+  }
+}
