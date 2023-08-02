@@ -1,6 +1,7 @@
 'use client';
 
 import Image from 'next/image';
+import Link from 'next/link';
 
 import { useAccount } from 'wagmi';
 
@@ -18,6 +19,14 @@ export default function Home() {
           <h1 className=" text-6xl p-4 text-center font-bold gradient-b-y place-content-center">
             Stepping into the Future: The Hryvnia Stablecoin Revolution
           </h1>
+          <div className=" flex flex-col items-center align-middle">
+            <Link
+              href="#guide-section"
+              className=" bg-header-button p-[6px] hover:bg-blue-600 hover:shadow-lg hover:shadow-blue-600/50 rounded-xl hover:scale-105 transition duration-150 font-semibold w-64 h-16 text-center text-3xl pt-3"
+            >
+              Get started
+            </Link>
+          </div>
         </div>
         <div className=" w-1/2 flex flex-col justify-center items-center">
           <Image
@@ -75,7 +84,7 @@ export default function Home() {
           </div>
         </div>
       </div>
-      <div className=" w-full h-auto mb-20">
+      <div className=" w-full h-auto mb-20" id="guide-section">
         <div className=" flex flex-col justify-center items-center mt-8">
           <h1 className=" text-5xl font-semibold rounded-xl p-6">
             User&apos;s guide to using protocol
