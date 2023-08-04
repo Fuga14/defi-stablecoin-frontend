@@ -4,3 +4,5 @@ const addresses = {
   dhcEngine: '0x092dc07A6e42888B1B8caB478CF7e897D5ab05e9',
   dhc: '0x9A3d58644B45E85bb1b89f3B0e78425a83A72e80',
 };
+
+export default addresses;
