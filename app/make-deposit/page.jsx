@@ -7,6 +7,8 @@ import { useNetwork, useAccount, useContractRead } from 'wagmi';
 import addresses from '@/constants/addresses';
 import { dhcEngineABI } from '@/constants/dhcEngine-abi';
 import { formatEther } from 'viem';
+import DepositBalanceUSD from '@/components/DepositBalanceUSD';
+import MintedBalance from '@/components/MintedBalance';
 
 const MakeDeposit = () => {
   const [collateralValueInUsd, setCollateralValueInUsd] = useState(0);
@@ -26,6 +28,7 @@ const MakeDeposit = () => {
     abi: dhcEngineABI,
     functionName: 'getAccountInformation',
     args: [address],
+    watch: true,
     onSuccess(data) {
       console.log(data);
       const dataValueInUsd = formatEther(data[1]);
@@ -46,6 +49,8 @@ const MakeDeposit = () => {
           <button>Get account information!</button>
           <h1>Your deposit in USD:${collateralValueInUsd}</h1>
           <h1>Your UHC balance: {totalDhcMinted}</h1>
+          <DepositBalanceUSD collateralValueInUsd={collateralValueInUsd} />
+          <MintedBalance totalDhcMinted={totalDhcMinted} />
         </div>
       )}
     </div>
