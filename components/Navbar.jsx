@@ -1,15 +1,15 @@
-"use client";
-import React from "react";
-import { ConnectButton } from "@rainbow-me/rainbowkit";
-import Link from "next/link";
-import Image from "next/image";
+'use client';
+import React from 'react';
+import { ConnectButton } from '@rainbow-me/rainbowkit';
+import Link from 'next/link';
+import Image from 'next/image';
 
 const Navbar = () => {
   const links = [
-    { id: 1, title: "Make deposit", url: "/make-deposit" },
-    { id: 2, title: "Withdraw deposit", url: "/withdraw-deposit" },
-    { id: 3, title: "Mint UHC", url: "/mint-uhc" },
-    { id: 4, title: "Burn UHC", url: "/burn-uhc" },
+    { id: 1, title: 'Make deposit', url: '/make-deposit' },
+    { id: 2, title: 'Withdraw deposit', url: '/withdraw-deposit' },
+    { id: 3, title: 'Mint UHC', url: '/mint-uhc' },
+    { id: 4, title: 'Burn UHC', url: '/burn-uhc' },
   ];
 
   return (
@@ -35,7 +35,7 @@ const Navbar = () => {
         ))}
       </div>
       <div className=" w-2/4 flex flex-row-reverse pr-5 ">
-        <ConnectButton />
+        <ConnectButton showBalance={false} />
       </div>
     </div>
   );
