@@ -13,10 +13,13 @@ import MintedBalance from '@/components/MintedBalance';
 const MakeDeposit = () => {
   const [collateralValueInUsd, setCollateralValueInUsd] = useState(0);
   const [totalDhcMinted, setTotalDhcMinted] = useState(0);
+  const [userHealthFactor, setUserHealthFactor] = useState(0);
 
   const { chain } = useNetwork();
   const { address } = useAccount();
   const dhcAddress = addresses.dhcEngine;
+  const MAX_UINT256 =
+    '115792089237316195423570985008687907853269984665640564039457584007913129639935';
 
   // console.log(chain);
   // console.log(dhcAddress);
@@ -40,17 +43,30 @@ const MakeDeposit = () => {
     },
   });
 
+  const { data: healthFactor } = useContractRead({
+    address: dhcAddress,
+    abi: dhcEngineABI,
+    functionName: 'getHealthFactor',
+    args: [address],
+    watch: true,
+    onSuccess(healthFactor) {
+      console.log(healthFactor);
+      const hf = healthFactor.toString();
+      setUserHealthFactor(hf);
+    },
+  });
+
   return (
     <div className=" w-full h-[80vh]">
       {chain?.name != 'Sepolia' ? (
         <NotSepoliaChain />
       ) : (
-        <div className="">
-          <button>Get account information!</button>
-          <h1>Your deposit in USD:${collateralValueInUsd}</h1>
-          <h1>Your UHC balance: {totalDhcMinted}</h1>
-          <DepositBalanceUSD collateralValueInUsd={collateralValueInUsd} />
-          <MintedBalance totalDhcMinted={totalDhcMinted} />
+        <div className=" flex flex-col">
+          <div className=" flex flex-col ">
+            <DepositBalanceUSD collateralValueInUsd={collateralValueInUsd} />
+            <MintedBalance totalDhcMinted={totalDhcMinted} />
+            <h1>{userHealthFactor}</h1>
+          </div>
         </div>
       )}
     </div>
