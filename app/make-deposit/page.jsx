@@ -9,6 +9,7 @@ import { dhcEngineABI } from '@/constants/dhcEngine-abi';
 import { formatEther } from 'viem';
 import DepositBalanceUSD from '@/components/DepositBalanceUSD';
 import MintedBalance from '@/components/MintedBalance';
+import HealthFactor from '@/components/HealthFactor';
 
 const MakeDeposit = () => {
   const [collateralValueInUsd, setCollateralValueInUsd] = useState(0);
@@ -33,7 +34,6 @@ const MakeDeposit = () => {
     args: [address],
     watch: true,
     onSuccess(data) {
-      console.log(data);
       const dataValueInUsd = formatEther(data[1]);
       const roundedValue = Number(dataValueInUsd).toFixed(2);
       setCollateralValueInUsd(roundedValue);
@@ -50,7 +50,6 @@ const MakeDeposit = () => {
     args: [address],
     watch: true,
     onSuccess(healthFactor) {
-      console.log(healthFactor);
       const hf = healthFactor.toString();
       setUserHealthFactor(hf);
     },
@@ -61,12 +60,13 @@ const MakeDeposit = () => {
       {chain?.name != 'Sepolia' ? (
         <NotSepoliaChain />
       ) : (
-        <div className=" flex flex-col">
-          <div className=" flex flex-col ">
+        <div className=" flex flex-row w-full h-[80vh]">
+          <div className=" w-1/3 flex flex-col justify-center items-center space-y-10">
             <DepositBalanceUSD collateralValueInUsd={collateralValueInUsd} />
             <MintedBalance totalDhcMinted={totalDhcMinted} />
-            <h1>{userHealthFactor}</h1>
+            <HealthFactor userHealthFactor={userHealthFactor} />
           </div>
+          <div className=" w-2/3">Side</div>
         </div>
       )}
     </div>
