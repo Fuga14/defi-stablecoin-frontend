@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useState } from 'react';
 import NotSepoliaChain from '@/components/NotSepoliaChain';
 import {
@@ -9,6 +9,7 @@ import {
   useContractRead,
   useContractWrite,
   usePrepareContractWrite,
+  useWaitForTransaction,
 } from 'wagmi';
 import addresses from '@/constants/addresses';
 import { dhcEngineABI } from '@/constants/dhcEngine-abi';
@@ -25,6 +26,7 @@ const MakeDeposit = () => {
   const [userHealthFactor, setUserHealthFactor] = useState(0);
   const [selectedCurrency, setSelectedCurrency] = useState(1);
   const [depositAmount, setDepositAmount] = useState('');
+  const [approveSuccess, setApproveSuccess] = useState(false);
   const { chain } = useNetwork();
   const { address } = useAccount();
   const dhcAddress = addresses.dhcEngine;
@@ -74,9 +76,7 @@ const MakeDeposit = () => {
   const handleAmountInputChange = (event) => {
     const selectedValue = event.target.value;
     const valueToString = selectedValue.toString();
-    console.log(valueToString);
     const valueInWei = parseEther(valueToString);
-    console.log(valueInWei.toString());
     setDepositAmount(valueInWei.toString());
   };
 
@@ -94,6 +94,62 @@ const MakeDeposit = () => {
     args: [dhcAddress, Number(depositAmount)],
   });
 
+  // const { config: depositCollateralConfig } = usePrepareContractWrite({
+  //   address: dhcAddress,
+  //   abi: dhcEngineABI,
+  //   functionName: 'depositCollateral',
+  // });
+
+  const {
+    data: depositTxWeth,
+    write: depositCollateralWeth,
+    isSuccess: depositWethSuccess,
+    isError: depositWethError,
+  } = useContractWrite({
+    address: dhcAddress,
+    abi: dhcEngineABI,
+    functionName: 'depositCollateral',
+    args: [wethAddress, depositAmount],
+  });
+
+  const {
+    data: depositTxWbtc,
+    write: depositCollateralWbtc,
+    isSuccess: depositWbtcSuccess,
+    isError: depositWbtcError,
+  } = useContractWrite({
+    address: dhcAddress,
+    abi: dhcEngineABI,
+    functionName: 'depositCollateral',
+    args: [wbtcAddress, depositAmount],
+  });
+
+  const {
+    data: wethApproveData,
+    isSuccess: wethApproveSuccess,
+    isError: wethApproveError,
+    isLoading: wethApprovaLoading,
+    write: approveWeth,
+  } = useContractWrite(wethConfigApprove);
+
+  const {
+    data: wbtcApproveData,
+    isSuccess: wbtcApproveSuccess,
+    isError: wbtcApproveError,
+    write: approveWbtc,
+  } = useContractWrite(wbtcConfigApprove);
+
+  const { isSuccess: txWethApproveSuccess } = useWaitForTransaction({
+    hash: wethApproveData?.hash,
+  });
+
+  const { isSuccess: txWbtcApproveSuccess } = useWaitForTransaction({
+    hash: wbtcApproveSuccess?.hash,
+  });
+
+  const isApprovedWeth = txWethApproveSuccess;
+  const isApprovedWbtc = txWbtcApproveSuccess;
+
   return (
     <div className=" w-full h-[80vh]">
       {chain?.name != 'Sepolia' ? (
@@ -105,28 +161,62 @@ const MakeDeposit = () => {
             <MintedBalance totalDhcMinted={totalDhcMinted} />
             <HealthFactor userHealthFactor={userHealthFactor} />
           </div>
-          <div className=" w-2/3">
-            <div className="">
-              <div className=" ">
-                <h1>Choose currency to deposit</h1>
-                <select
-                  value={selectedCurrency}
-                  onChange={handleCurrencyChange}
-                  className=" bg-black text-4xl rounded-xl border-white border text-center p-2"
-                >
-                  <option value={1}>weth</option>
-                  <option value={2}>wbtc</option>
-                </select>
-              </div>
-              <p>Выбранная валюта: {selectedCurrency === 1 ? 'weth' : 'wbtc'}</p>
+          <div className=" w-2/3 flex flex-col justify-center items-center">
+            <div className=" flex flex-row justify-center items-center space-x-10 mb-10">
+              <h1 className=" text-3xl font-semibold">Choose currency to deposit</h1>
+              <select
+                value={selectedCurrency}
+                onChange={handleCurrencyChange}
+                className=" bg-header-button text-xl font-semibold rounded-xl rounded-header-button text-center pr-4 pl-4 pt-2 pb-2 hover:scale-105 transition duration-150"
+              >
+                <option value={1}>WETH</option>
+                <option value={2}>WBTC</option>
+              </select>
+            </div>
+            <div className=" flex flex-row space-x-10">
               <input
                 type="number"
-                className=" text-black w-80 "
-                placeholder=" Type amount you want to seposit"
+                className=" text-black w-80 border rounded-xl text-center pt-2 pb-2 text-lg shadow-sm shadow-black focus:shadow-md focus:shadow-black"
+                placeholder=" Type amount you want to deposit"
                 onChange={handleAmountInputChange}
               />
-              <h1>{depositAmount}</h1>
-              <button>Make deposit!!!</button>
+              <button
+                className=" bg-header-button p-[6px] hover:bg-blue-600 hover:shadow-lg hover:shadow-blue-600/50 rounded-xl hover:scale-105 transition duration-150 font-semibold pl-5 pr-5"
+                onClick={() => {
+                  if (selectedCurrency === 1) {
+                    approveWeth();
+                  } else {
+                    approveWbtc();
+                  }
+                }}
+              >
+                Approve
+              </button>
+              <div className=" flex justify-center items-center">
+                <h1 className=" text-green-400 text-xl font-semibold">
+                  {selectedCurrency === 1
+                    ? txWethApproveSuccess && 'Approved'
+                    : txWbtcApproveSuccess && 'Approved'}
+                </h1>
+                <h1 className=" text-red-500 text-xl font-semibold">
+                  {(wethApproveError && 'Approve failed!') ||
+                    (wbtcApproveError && 'Approve failed!')}
+                </h1>
+              </div>
+            </div>{' '}
+            <div className=" mt-10">
+              <button
+                className=" bg-header-button p-[6px] hover:bg-blue-600 hover:shadow-lg hover:shadow-blue-600/50 rounded-xl hover:scale-105 transition duration-150 font-semibold pl-5 pr-5 text-3xl"
+                onClick={() => {
+                  if (selectedCurrency === 1) {
+                    depositCollateralWeth();
+                  } else {
+                    depositCollateralWbtc();
+                  }
+                }}
+              >
+                Deposit
+              </button>
             </div>
           </div>
         </div>
