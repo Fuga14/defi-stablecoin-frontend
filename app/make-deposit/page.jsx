@@ -26,7 +26,8 @@ const MakeDeposit = () => {
   const [userHealthFactor, setUserHealthFactor] = useState(0);
   const [selectedCurrency, setSelectedCurrency] = useState(1);
   const [depositAmount, setDepositAmount] = useState('');
-  const [approveSuccess, setApproveSuccess] = useState(false);
+  const [inputValue, setInputValue] = useState('');
+
   const { chain } = useNetwork();
   const { address } = useAccount();
   const dhcAddress = addresses.dhcEngine;
@@ -73,13 +74,6 @@ const MakeDeposit = () => {
     setSelectedCurrency(parseInt(selectedValue));
   };
 
-  const handleAmountInputChange = (event) => {
-    const selectedValue = event.target.value;
-    const valueToString = selectedValue.toString();
-    const valueInWei = parseEther(valueToString);
-    setDepositAmount(valueInWei.toString());
-  };
-
   const { config: wethConfigApprove } = usePrepareContractWrite({
     address: wethAddress,
     abi: wethABI,
@@ -93,12 +87,6 @@ const MakeDeposit = () => {
     functionName: 'approve',
     args: [dhcAddress, Number(depositAmount)],
   });
-
-  // const { config: depositCollateralConfig } = usePrepareContractWrite({
-  //   address: dhcAddress,
-  //   abi: dhcEngineABI,
-  //   functionName: 'depositCollateral',
-  // });
 
   const {
     data: depositTxWeth,
@@ -164,6 +152,33 @@ const MakeDeposit = () => {
     hash: depositTxWbtc?.hash,
   });
 
+  const handleKeyPress = (event) => {
+    const charCode = event.which ? event.which : event.keyCode;
+    // Allow only numeric characters (character codes 48-57 correspond to digits 0-9)
+    // Allow one decimal point (character code 46)
+    if (
+      (charCode < 48 || charCode > 57) &&
+      charCode !== 46 // decimal point character code
+    ) {
+      event.preventDefault();
+    }
+    // Check that the decimal point has not been entered earlier
+    if (charCode === 46 && inputValue.includes('.')) {
+      event.preventDefault();
+    }
+  };
+
+  const handleChange = (event) => {
+    setInputValue(event.target.value);
+    convertToWei(event.target.value);
+  };
+
+  const convertToWei = (value) => {
+    console.log(value);
+    const valueInWei = parseEther(value);
+    setDepositAmount(valueInWei);
+  };
+
   return (
     <div className=" w-full h-[80vh]">
       {chain?.name != 'Sepolia' ? (
@@ -190,11 +205,12 @@ const MakeDeposit = () => {
             <div className=" flex flex-row space-x-10">
               <input
                 type="text"
-                inputMode="numeric"
-                pattern="[0-9]*"
+                value={inputValue}
+                id="inputValue"
+                onKeyPress={handleKeyPress}
+                onChange={handleChange}
                 className=" text-black w-80 border rounded-xl text-left font-semibold pl-4 pt-2 pb-2 text-lg shadow-sm shadow-black focus:shadow-md focus:shadow-black"
                 placeholder=" Type amount you want to deposit"
-                onChange={handleAmountInputChange}
               />
             </div>{' '}
             <div className=" mt-10 flex flex-col">
