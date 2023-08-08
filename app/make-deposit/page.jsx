@@ -100,14 +100,26 @@ const MakeDeposit = () => {
   //   functionName: 'depositCollateral',
   // });
 
-  const { data: depositTxWeth, write: depositCollateralWeth } = useContractWrite({
+  const {
+    data: depositTxWeth,
+    write: depositCollateralWeth,
+    isSuccess: isDepositWethSuccess,
+    isLoading: isDepositWethLoading,
+    isError: isDepositWethError,
+  } = useContractWrite({
     address: dhcAddress,
     abi: dhcEngineABI,
     functionName: 'depositCollateral',
     args: [wethAddress, depositAmount],
   });
 
-  const { data: depositTxWbtc, write: depositCollateralWbtc } = useContractWrite({
+  const {
+    data: depositTxWbtc,
+    write: depositCollateralWbtc,
+    isSuccess: isDepositWbtcSuccess,
+    isLoading: isDepositWbtcLoading,
+    isError: isDepositWbtcError,
+  } = useContractWrite({
     address: dhcAddress,
     abi: dhcEngineABI,
     functionName: 'depositCollateral',
@@ -116,25 +128,32 @@ const MakeDeposit = () => {
 
   const {
     data: wethApproveData,
-    isSuccess: wethApproveSuccess,
-    isError: wethApproveError,
-    isLoading: wethApprovaLoading,
+    isSuccess: isApproveWethSuccess,
+    isError: isApproveWethError,
+    isLoading: isApproveWethLoading,
     write: approveWeth,
   } = useContractWrite(wethConfigApprove);
 
   const {
     data: wbtcApproveData,
-    isSuccess: wbtcApproveSuccess,
-    isError: wbtcApproveError,
+    isSuccess: isApproveWbtcSuccess,
+    isError: isApproveWbtcError,
+    isLoading: isApproveWbtcLoading,
     write: approveWbtc,
   } = useContractWrite(wbtcConfigApprove);
 
   const { isSuccess: txWethApproveSuccess } = useWaitForTransaction({
     hash: wethApproveData?.hash,
+    onSuccess(data) {
+      depositCollateralWeth();
+    },
   });
 
   const { isSuccess: txWbtcApproveSuccess } = useWaitForTransaction({
-    hash: wbtcApproveSuccess?.hash,
+    hash: wbtcApproveData?.hash,
+    onSuccess(data) {
+      depositCollateralWbtc();
+    },
   });
 
   const { isSuccess: depositWethSuccess, isError: depositWethError } = useWaitForTransaction({
@@ -144,11 +163,6 @@ const MakeDeposit = () => {
   const { isSuccess: depositWbtcSuccess, isError: depositWbtcError } = useWaitForTransaction({
     hash: depositTxWbtc?.hash,
   });
-
-  const isApprovedWeth = txWethApproveSuccess;
-  const isApprovedWbtc = txWbtcApproveSuccess;
-  const isDepositWethSuccess = depositWethSuccess;
-  const isDepositbtcSuccess = depositWbtcSuccess;
 
   return (
     <div className=" w-full h-[80vh]">
@@ -167,7 +181,7 @@ const MakeDeposit = () => {
               <select
                 value={selectedCurrency}
                 onChange={handleCurrencyChange}
-                className=" bg-header-button text-xl font-semibold rounded-xl rounded-header-button text-center pr-4 pl-4 pt-2 pb-2 hover:scale-105 transition duration-150"
+                className=" bg-header-button text-xl font-semibold rounded-xl rounded-header-button text-center pr-4 pl-4 pt-2 pb-2  transition duration-150"
               >
                 <option value={1}>WETH</option>
                 <option value={2}>WBTC</option>
@@ -175,57 +189,81 @@ const MakeDeposit = () => {
             </div>
             <div className=" flex flex-row space-x-10">
               <input
-                type="number"
-                className=" text-black w-80 border rounded-xl text-center pt-2 pb-2 text-lg shadow-sm shadow-black focus:shadow-md focus:shadow-black"
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                className=" text-black w-80 border rounded-xl text-left font-semibold pl-4 pt-2 pb-2 text-lg shadow-sm shadow-black focus:shadow-md focus:shadow-black"
                 placeholder=" Type amount you want to deposit"
                 onChange={handleAmountInputChange}
               />
-              <button
-                className=" bg-header-button p-[6px] hover:bg-blue-600 hover:shadow-lg hover:shadow-blue-600/50 rounded-xl hover:scale-105 transition duration-150 font-semibold pl-5 pr-5"
-                onClick={() => {
-                  if (selectedCurrency === 1) {
-                    approveWeth();
-                  } else {
-                    approveWbtc();
-                  }
-                }}
-              >
-                Approve
-              </button>
-              <div className=" flex justify-center items-center">
-                <h1 className=" text-green-400 text-xl font-semibold">
-                  {selectedCurrency === 1
-                    ? txWethApproveSuccess && 'Approved'
-                    : txWbtcApproveSuccess && 'Approved'}
-                </h1>
-                <h1 className=" text-red-500 text-xl font-semibold">
-                  {(wethApproveError && 'Approve failed!') ||
-                    (wbtcApproveError && 'Approve failed!')}
-                </h1>
-              </div>
             </div>{' '}
-            <div className=" mt-10 flex flex-row space-x-10">
-              <button
-                className=" bg-header-button p-[6px] hover:bg-blue-600 hover:shadow-lg hover:shadow-blue-600/50 rounded-xl hover:scale-105 transition duration-150 font-semibold pl-5 pr-5 text-3xl"
-                onClick={() => {
-                  if (selectedCurrency === 1) {
-                    depositCollateralWeth();
-                  } else {
-                    depositCollateralWbtc();
-                  }
-                }}
-              >
-                Deposit
-              </button>
+            <div className=" mt-10 flex flex-col">
               <div className=" flex justify-center items-center">
-                <h1 className=" text-green-400 text-lg font-semibold">
-                  {selectedCurrency === 1
-                    ? depositWethSuccess && 'Deposit successfull'
-                    : depositWbtcSuccess && 'Deposit successfull'}
+                <button
+                  className=" page-button pl-5 pr-5 text-3xl"
+                  onClick={() => {
+                    if (selectedCurrency === 1) {
+                      approveWeth();
+                    } else {
+                      approveWbtc();
+                    }
+                  }}
+                >
+                  Deposit
+                </button>
+              </div>
+              <div className=" flex flex-col justify-center items-center">
+                <h1 className=" green-transactions">
+                  {selectedCurrency === 1 && isApproveWethLoading && 'Approve loading...'}
+                  {(selectedCurrency === 1 &&
+                    isApproveWethSuccess &&
+                    !txWethApproveSuccess &&
+                    'Approving...') ||
+                    (selectedCurrency === 1 && txWethApproveSuccess && 'Approved!')}
+
+                  {selectedCurrency === 2 && isApproveWbtcLoading && 'Approve loading...'}
+                  {(selectedCurrency === 2 &&
+                    isApproveWbtcSuccess &&
+                    !txWbtcApproveSuccess &&
+                    'Approving...') ||
+                    (selectedCurrency === 2 && txWbtcApproveSuccess && 'Approved!')}
                 </h1>
-                <h1 className=" text-red-500 text-lg font-semibold">
-                  {(depositWbtcError && 'Deposit failed!') ||
-                    (depositWethError && 'Deposit failed!')}
+                <h1 className=" red-transactions">
+                  {selectedCurrency === 1 && isApproveWethError && 'Approve failed'}
+
+                  {selectedCurrency === 2 && isApproveWbtcError && 'Approve failed'}
+                </h1>
+                <h1 className=" green-transactions">
+                  {selectedCurrency === 1 && isDepositWethLoading && 'Deposit loading...'}
+                  {(selectedCurrency === 1 &&
+                    isDepositWethSuccess &&
+                    !depositWethSuccess &&
+                    'Depositing...') ||
+                    (selectedCurrency === 1 &&
+                      depositWethSuccess &&
+                      `Successfully deposited ${formatEther(depositAmount)} of WETH`)}
+
+                  {selectedCurrency === 2 && isDepositWbtcLoading && 'Deposit loading...'}
+                  {(selectedCurrency === 2 &&
+                    isDepositWbtcSuccess &&
+                    !depositWbtcSuccess &&
+                    'Depositing...') ||
+                    (selectedCurrency === 2 &&
+                      depositWbtcSuccess &&
+                      `Successfully deposited ${depositAmount} of WBTC`)}
+                </h1>
+                <h1 className=" red-transactions">
+                  {selectedCurrency === 1 &&
+                    isDepositWethError &&
+                    !depositWethError &&
+                    'Deposit transaction not started'}
+                  {selectedCurrency === 1 && isDepositWethError && 'Deposit transaction failed'}
+
+                  {selectedCurrency === 2 &&
+                    isDepositWbtcError &&
+                    !depositWbtcError &&
+                    'Deposit transaction not started'}
+                  {selectedCurrency === 2 && depositWbtcError && 'Deposit transaction failed'}
                 </h1>
               </div>
             </div>
