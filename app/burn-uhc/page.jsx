@@ -157,22 +157,22 @@ const BurnUHC = () => {
               >
                 BURN COIN{inputValue > 1 ? 'S' : ''}
               </button>
-              <h1 className=" text-green-400 text-md font-semibold mt-1">
+              <h1 className=" green-transactions">
                 {isApproveLoading && 'Approve loading...'}
                 {(isApproveSuccess && !approveSuccess && 'Approving...') ||
                   (approveSuccess && 'Successfully approved')}
               </h1>
-              <h1 className=" text-red-500 text-md font-semibold mt-1">
+              <h1 className=" red-transactions">
                 {isApproveError && 'Approve error'}
                 {approveError && 'Approve failed'}
               </h1>
-              <h1 className=" text-green-400 text-md font-semibold mt-1">
+              <h1 className=" green-transactions">
                 {isBurnLoading && 'Burn loading...'}
                 {(isBurnSuccess && !burnSuccess && 'Burning...') ||
                   (burnSuccess &&
                     `Successfully burned ${inputValue} coin${inputValue > 1 ? 's' : ''}`)}
               </h1>
-              <h1 className=" text-red-500 text-md font-semibold mt-1">
+              <h1 className=" red-transactions">
                 {isBurnError && 'Transaction failed and not started'}
                 {burnError && 'Burn failed'}
               </h1>
