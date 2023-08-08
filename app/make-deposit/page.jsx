@@ -100,24 +100,14 @@ const MakeDeposit = () => {
   //   functionName: 'depositCollateral',
   // });
 
-  const {
-    data: depositTxWeth,
-    write: depositCollateralWeth,
-    isSuccess: depositWethSuccess,
-    isError: depositWethError,
-  } = useContractWrite({
+  const { data: depositTxWeth, write: depositCollateralWeth } = useContractWrite({
     address: dhcAddress,
     abi: dhcEngineABI,
     functionName: 'depositCollateral',
     args: [wethAddress, depositAmount],
   });
 
-  const {
-    data: depositTxWbtc,
-    write: depositCollateralWbtc,
-    isSuccess: depositWbtcSuccess,
-    isError: depositWbtcError,
-  } = useContractWrite({
+  const { data: depositTxWbtc, write: depositCollateralWbtc } = useContractWrite({
     address: dhcAddress,
     abi: dhcEngineABI,
     functionName: 'depositCollateral',
@@ -147,8 +137,18 @@ const MakeDeposit = () => {
     hash: wbtcApproveSuccess?.hash,
   });
 
+  const { isSuccess: depositWethSuccess, isError: depositWethError } = useWaitForTransaction({
+    hash: depositTxWeth?.hash,
+  });
+
+  const { isSuccess: depositWbtcSuccess, isError: depositWbtcError } = useWaitForTransaction({
+    hash: depositTxWbtc?.hash,
+  });
+
   const isApprovedWeth = txWethApproveSuccess;
   const isApprovedWbtc = txWbtcApproveSuccess;
+  const isDepositWethSuccess = depositWethSuccess;
+  const isDepositbtcSuccess = depositWbtcSuccess;
 
   return (
     <div className=" w-full h-[80vh]">
@@ -204,7 +204,7 @@ const MakeDeposit = () => {
                 </h1>
               </div>
             </div>{' '}
-            <div className=" mt-10">
+            <div className=" mt-10 flex flex-row space-x-10">
               <button
                 className=" bg-header-button p-[6px] hover:bg-blue-600 hover:shadow-lg hover:shadow-blue-600/50 rounded-xl hover:scale-105 transition duration-150 font-semibold pl-5 pr-5 text-3xl"
                 onClick={() => {
@@ -217,6 +217,17 @@ const MakeDeposit = () => {
               >
                 Deposit
               </button>
+              <div className=" flex justify-center items-center">
+                <h1 className=" text-green-400 text-lg font-semibold">
+                  {selectedCurrency === 1
+                    ? depositWethSuccess && 'Deposit successfull'
+                    : depositWbtcSuccess && 'Deposit successfull'}
+                </h1>
+                <h1 className=" text-red-500 text-lg font-semibold">
+                  {(depositWbtcError && 'Deposit failed!') ||
+                    (depositWethError && 'Deposit failed!')}
+                </h1>
+              </div>
             </div>
           </div>
         </div>
