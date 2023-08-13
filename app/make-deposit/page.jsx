@@ -180,11 +180,11 @@ const MakeDeposit = () => {
   };
 
   return (
-    <div className=" w-full h-[80vh]">
+    <div className=" w-full h-screen">
       {chain?.name != 'Sepolia' ? (
         <NotSepoliaChain />
       ) : (
-        <div className=" flex flex-row w-full h-[80vh]">
+        <div className=" flex flex-row w-full h-screen">
           <div className=" w-1/3 flex flex-col justify-center items-center space-y-10">
             <DepositBalanceUSD collateralValueInUsd={collateralValueInUsd} />
             <MintedBalance totalDhcMinted={totalDhcMinted} />
